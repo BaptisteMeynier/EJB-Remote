@@ -4,7 +4,7 @@
 ## Server
 You have to provide an interface and an implementation. The implementation has to reference with annotations the interface that will be called by the client. 
 
-###Stateless
+### Stateless
 Implementation
 ```
 @Stateless
@@ -16,7 +16,7 @@ Remote
 public interface RemoteGreeting {
 ```
 
-###Stateful
+### Stateful
 Implementation
 ```
 @Stateful
@@ -41,6 +41,16 @@ public interface RemoteCounter {
 </dependency>
 ```
 
+### Code
+You have to forge a jndi in order to call the remote ejb
+#### Stateful EJB
+```
+ejb:<app-name>/<module-name>/<distinct-name>/<bean-name>!<fully-qualified-classname-of-the-remote-interface>?stateful
+```
+#### Stateless EJB
+```
+ejb:<app-name>/<module-name>/<distinct-name>/<bean-name>!<fully-qualified-classname-of-the-remote-interface>
+```
 ### Configuration
 You need to create a file which is called  jboss-ejb-client.properties   
 The classical file looks like the bellow example:
