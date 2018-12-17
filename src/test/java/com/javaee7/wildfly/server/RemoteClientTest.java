@@ -1,13 +1,20 @@
 package com.javaee7.wildfly.server;
 
 import java.util.Hashtable;
+import java.util.Properties;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.ejb.client.ContextSelector;
+import org.jboss.ejb.client.EJBClientConfiguration;
+import org.jboss.ejb.client.EJBClientContext;
+import org.jboss.ejb.client.PropertiesBasedEJBClientConfiguration;
+import org.jboss.ejb.client.remoting.ConfigBasedEJBClientContextSelector;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -34,6 +41,7 @@ public class RemoteClientTest {
             .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
 }
 	@Test
+    @RunAsClient
 	public void should_call_stateless_ejb() throws NamingException {
 		RemoteGreeting greeting = lookupRemoteStateless();
 		Assert.assertEquals("Hello", greeting.classical());
@@ -42,6 +50,7 @@ public class RemoteClientTest {
 	}
 	
 	@Test
+    @RunAsClient
 	public void should_call_statefull_ejb() throws NamingException {
 		RemoteCounter counter = lookupRemoteStateful();
 		Assert.assertEquals(0,counter.getCount());
@@ -51,7 +60,43 @@ public class RemoteClientTest {
 		counter.increment();
 		Assert.assertEquals(1, counter.getCount());
 	}
-	
+
+    @Test
+    @RunAsClient
+    public void should_call_stateless_ejb_without_file() throws NamingException {
+	    Properties properties = new Properties();
+        properties.put( Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming" );
+        //properties.put( "org.jboss.ejb.client.scoped.context", "true" );
+        //properties.put( "remote.connectionprovider.create.options.org.xnio.Options.SSL_ENABLED", "false" );
+        //properties.put( "remote.connection.default.connect.options.org.xnio.Options.SASL_POLICY_NOANONYMOUS", "false" );
+        properties.put( "remote.connections", "default" );
+        properties.put( "remote.connection.default.host", "localhost" );
+        properties.put( "remote.connection.default.port","8080");
+        final Context context = new InitialContext(properties);
+        RemoteGreeting greeting = (RemoteGreeting) context.lookup(createStatelessJndi());
+        Assert.assertEquals("Hello", greeting.classical());
+    }
+
+    @Test
+    @RunAsClient
+    public void should_call_stateless_ejb_without_file_with_multiple_target() throws NamingException {
+        Properties properties = new Properties();
+        properties.put( Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming" );
+        properties.put( "org.jboss.ejb.client.scoped.context", "true" );
+        properties.put( "remote.connections", "one, two" );
+
+        properties.put( "remote.connection.one.host","localhost" );
+        properties.put( "remote.connection.one.port","8080" );
+
+        properties.put( "remote.connection.two.host","localhost" );
+        properties.put( "remote.connection.two.port","7979" );
+
+        final Context context = new InitialContext(properties);
+        RemoteGreeting greeting = (RemoteGreeting) context.lookup(createStatelessJndi());
+        Assert.assertEquals("Hello", greeting.classical());
+    }
+
+
     /**
      * Looks up and returns the proxy to remote stateless calculator bean
      *
@@ -62,6 +107,11 @@ public class RemoteClientTest {
         final Hashtable<String,String> jndiProperties = new Hashtable();
         jndiProperties.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
         final Context context = new InitialContext(jndiProperties);
+
+        return (RemoteGreeting) context.lookup(createStatelessJndi());
+    }
+
+    private static String createStatelessJndi(){
         // The app name is the application name of the deployed EJBs. This is typically the ear name
         // without the .ear suffix. However, the application name could be overridden in the application.xml of the
         // EJB deployment on the server.
@@ -81,9 +131,9 @@ public class RemoteClientTest {
         final String viewClassName = RemoteGreeting.class.getName();
         // let's do the lookup
         final String jndi = "ejb:" + appName + "/" + moduleName + "/" + distinctName + "/" + beanName + "!" + viewClassName;
-        return (RemoteGreeting) context.lookup(jndi);
+        return jndi;
     }
- 
+
     /**
      * Looks up and returns the proxy to remote stateful counter bean
      *
@@ -115,6 +165,7 @@ public class RemoteClientTest {
         String jndi = "ejb:" + appName + "/" + moduleName + "/" + distinctName + "/" + beanName + "!" + viewClassName + "?stateful";
         return (RemoteCounter) context.lookup(jndi);
     }
-	
+
+
 	
 }
