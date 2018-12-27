@@ -34,26 +34,29 @@ public class RemoteClientWFtoWFTest {
 
     private static String APPLICATION_NAME = "myApplication";
 
-    @Inject
-    @TargetsContainer("widlfly-managed-1")
-    private EJBClient ejbClient;
-
     @Deployment(name = "wildfly1")
     @TargetsContainer("widlfly-managed-1")
     public static WebArchive createDeployment1() {
-        return ShrinkWrap.create(WebArchive.class, String.format("%s.war", APPLICATION_NAME + "_1"))
+        return ShrinkWrap.create(WebArchive.class, String.format("%s.war", APPLICATION_NAME))
+                .addClasses(Counter.class,RemoteCounter.class)
+                .addClasses(Greeting.class,RemoteGreeting.class)
                 .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
     }
 
     @Deployment(name = "wildfly2")
     @TargetsContainer("widlfly-managed-2")
     public static WebArchive createDeployment2() {
-        return ShrinkWrap.create(WebArchive.class, String.format("%s.war", APPLICATION_NAME + "_2"))
+        return ShrinkWrap.create(WebArchive.class, String.format("%s.war", APPLICATION_NAME + "-2"))
+                .addClasses(EJBClient.class)
+                .addClasses(Counter.class,RemoteCounter.class)
+                .addClasses(Greeting.class,RemoteGreeting.class)
                 .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
     }
 
     @Test
+    @OperateOnDeployment("wildfly2")
     public void testEjbCall() throws NamingException {
+        EJBClient ejbClient = new EJBClient();
         ejbClient.callStatelessEJB(APPLICATION_NAME);
     }
    /* @Test

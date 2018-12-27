@@ -9,6 +9,7 @@ import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClientConfiguration;
@@ -19,6 +20,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -32,8 +34,9 @@ import com.javaee7.wildfly.server.stateless.RemoteGreeting;
 public class RemoteClientTest {
 
 	private static String APPLICATION_NAME="myApplication";
-	
-	@Deployment
+
+    @Deployment(name = "wildfly1")
+    @TargetsContainer("widlfly-managed-1")
     public static WebArchive createDeployment() {
         return ShrinkWrap.create(WebArchive.class,String.format("%s.war", APPLICATION_NAME))
             .addClasses(Counter.class,RemoteCounter.class)
@@ -71,7 +74,7 @@ public class RemoteClientTest {
         //properties.put( "remote.connection.default.connect.options.org.xnio.Options.SASL_POLICY_NOANONYMOUS", "false" );
         properties.put( "remote.connections", "default" );
         properties.put( "remote.connection.default.host", "localhost" );
-        properties.put( "remote.connection.default.port","8080");
+        properties.put( "remote.connection.default.port","7979");
         final Context context = new InitialContext(properties);
         RemoteGreeting greeting = (RemoteGreeting) context.lookup(createStatelessJndi());
         Assert.assertEquals("Hello", greeting.classical());
@@ -86,10 +89,10 @@ public class RemoteClientTest {
         properties.put( "remote.connections", "one, two" );
 
         properties.put( "remote.connection.one.host","localhost" );
-        properties.put( "remote.connection.one.port","8080" );
+        properties.put( "remote.connection.one.port","7979" );
 
         properties.put( "remote.connection.two.host","localhost" );
-        properties.put( "remote.connection.two.port","7979" );
+        properties.put( "remote.connection.two.port","8080" );
 
         final Context context = new InitialContext(properties);
         RemoteGreeting greeting = (RemoteGreeting) context.lookup(createStatelessJndi());
