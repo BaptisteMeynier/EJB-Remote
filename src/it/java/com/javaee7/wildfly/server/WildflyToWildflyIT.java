@@ -7,30 +7,24 @@ import com.javaee7.wildfly.server.stateless.Greeting;
 import com.javaee7.wildfly.server.stateless.RemoteGreeting;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.inject.Inject;
+import javax.naming.Context;
 import javax.naming.NamingException;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.WebTarget;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.util.Properties;
 
 /**
  * https://github.com/arquillian/arquillian-showcase/blob/master/multinode/pom.xml
  */
 @RunWith(Arquillian.class)
-public class RemoteClientWFtoWFTest {
+public class WildflyToWildflyIT {
 
     private static String APPLICATION_NAME = "myApplication";
 
@@ -57,15 +51,49 @@ public class RemoteClientWFtoWFTest {
     @OperateOnDeployment("wildfly2")
     public void testEjbCall() throws NamingException {
         EJBClient ejbClient = new EJBClient();
-        ejbClient.callStatelessEJB(APPLICATION_NAME);
+        Assert.assertEquals("Hello",ejbClient.callStatelessEJB(APPLICATION_NAME));
     }
-   /* @Test
-    @RunAsClient
-    public void testRunningInDep1(@ArquillianResource URL baseURL) throws URISyntaxException {
-        Client client = ClientBuilder.newClient();
-        WebTarget webTarget = client.target(baseURL.toURI());
-        webTarget.queryParam("applicationName", APPLICATION_NAME + "_2").request().get();
-    }*/
 
+
+    @Test
+    @OperateOnDeployment("wildfly2")
+    public void testEjbCallToOtherLocalServer() throws NamingException {
+        EJBClient ejbClient = new EJBClient();
+        Properties properties = new Properties();
+        properties.put( Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming" );
+        properties.put( "org.jboss.ejb.client.scoped.context", "true" );
+        properties.put( "remote.connections", "one");
+
+        properties.put( "remote.connection.one.host","localhost" );
+        properties.put( "remote.connection.one.port","7979" );
+
+        Assert.assertEquals("Hello",ejbClient.callStatelessEJB(APPLICATION_NAME,properties));
+    }
+
+    @Test
+    @OperateOnDeployment("wildfly2")
+    public void testEjbCallToSameLocalServer() throws NamingException {
+        EJBClient ejbClient = new EJBClient();
+        Properties properties = new Properties();
+        properties.put( Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming" );
+        properties.put( "org.jboss.ejb.client.scoped.context", "true" );
+        properties.put( "remote.connections", "two");
+
+        properties.put( "remote.connection.two.host","localhost" );
+        properties.put( "remote.connection.two.port","8080" );
+
+        Assert.assertEquals("Hello",ejbClient.callStatelessEJB(APPLICATION_NAME,properties));
+    }
+
+
+    @Test
+    @OperateOnDeployment("wildfly2")
+    public void testEjbCallToServer() throws NamingException {
+        EJBClient ejbClient = new EJBClient();
+        Properties properties = new Properties();
+        properties.put( Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming" );
+
+        Assert.assertEquals("Hello",ejbClient.callStatelessEJB(APPLICATION_NAME,properties));
+    }
 
 }

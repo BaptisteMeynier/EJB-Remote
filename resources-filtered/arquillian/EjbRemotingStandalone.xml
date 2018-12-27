@@ -404,5 +404,12 @@
         <outbound-socket-binding name="mail-smtp">
             <remote-destination host="localhost" port="25"/>
         </outbound-socket-binding>
+        <outbound-socket-binding name="remote-ejb-one">
+            <remote-destination host="localhost" port="7979"/>
+        </outbound-socket-binding>
+        <outbound-socket-binding name="remote-ejb-two">
+            <remote-destination host="localhost" port="8080"/>
+        </outbound-socket-binding>
+
     </socket-binding-group>
 </server>

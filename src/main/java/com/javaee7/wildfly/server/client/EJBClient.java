@@ -7,28 +7,26 @@ import javax.inject.Singleton;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import java.util.Hashtable;
+import java.util.Map;
 import java.util.Properties;
 
 @Singleton
 public class EJBClient {
 
-    public String callStatelessEJB(final String applicationName) throws NamingException {
-        Properties properties = new Properties();
-        properties.put( Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming" );
-        properties.put( "org.jboss.ejb.client.scoped.context", "true" );
-        properties.put( "remote.connections", "one, two" );
-
-        properties.put( "remote.connection.one.host","localhost" );
-        properties.put( "remote.connection.one.port","8080" );
-
-        properties.put( "remote.connection.two.host","localhost" );
-        properties.put( "remote.connection.two.port","7979" );
-
-        final Context context = new InitialContext(properties);
+    public String callStatelessEJB(final String applicationName, Properties remoteDeclaration) throws NamingException {
+        final Context context = new InitialContext(remoteDeclaration);
         RemoteGreeting greeting = (RemoteGreeting) context.lookup(createStatelessJndi(applicationName));
         return greeting.classical();
     }
 
+    public String callStatelessEJB(final String applicationName) throws NamingException {
+        final Hashtable<String, String> jndiProperties = new Hashtable();
+        jndiProperties.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
+        final Context context = new InitialContext(jndiProperties);
+        RemoteGreeting greeting = (RemoteGreeting) context.lookup(createStatelessJndi(applicationName));
+        return greeting.classical();
+    }
 
     private static String createStatelessJndi(final String applicationName){
         final String appName = "";

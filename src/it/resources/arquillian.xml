@@ -21,7 +21,7 @@
                 <property name="jbossHome">${jbossHome:target/node2/wildfly-8.2.1.Final}</property>
                 <property name="httpPort">8080</property>
                 <property name="allowConnectingToRunningServer">true</property>
-                <!--property name="serverConfig">EjbRemotingStandalone.xml</property-->
+                <property name="serverConfig">EjbRemotingStandalone.xml</property>
             </configuration>
         </container>
     </group>
