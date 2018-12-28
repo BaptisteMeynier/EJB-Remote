@@ -36,6 +36,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <systemProperties>
+                        <arquillian.launch>wildfly-cluster</arquillian.launch>
                         <property>
                             <name>resource-filtered</name>
                             <value>${project.basedir}/resources-filtered</value>
@@ -114,7 +115,11 @@
             <artifactId>arquillian-junit-container</artifactId>
             <scope>test</scope>
         </dependency>
-
+        <dependency>
+            <groupId>org.jboss.arquillian.protocol</groupId>
+            <artifactId>arquillian-protocol-servlet</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-ejb-client-bom</artifactId>
@@ -191,7 +196,7 @@
                                     </outputDirectory>
                                     <resources>
                                         <resource>
-                                            <directory>src/resources-filtered/arquillian</directory>
+                                            <directory>resources-filtered/arquillian</directory>
                                             <filtering>true</filtering>
                                             <include>EjbRemotingStandalone.xml</include>
                                         </resource>

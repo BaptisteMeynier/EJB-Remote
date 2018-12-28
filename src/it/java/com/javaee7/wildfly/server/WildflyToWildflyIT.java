@@ -28,8 +28,7 @@ public class WildflyToWildflyIT {
 
     private static String APPLICATION_NAME = "myApplication";
 
-    @Deployment(name = "wildfly1")
-    @TargetsContainer("widlfly-managed-1")
+    @Deployment @TargetsContainer("widlfly-managed-1")
     public static WebArchive createDeployment1() {
         return ShrinkWrap.create(WebArchive.class, String.format("%s.war", APPLICATION_NAME))
                 .addClasses(Counter.class,RemoteCounter.class)
@@ -37,18 +36,19 @@ public class WildflyToWildflyIT {
                 .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
     }
 
-    @Deployment(name = "wildfly2")
-    @TargetsContainer("widlfly-managed-2")
+    @Deployment @TargetsContainer("widlfly-managed-2")
     public static WebArchive createDeployment2() {
         return ShrinkWrap.create(WebArchive.class, String.format("%s.war", APPLICATION_NAME + "-2"))
                 .addClasses(EJBClient.class)
                 .addClasses(Counter.class,RemoteCounter.class)
                 .addClasses(Greeting.class,RemoteGreeting.class)
+                .addAsWebInfResource("jboss-ejb-client.xml")
                 .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
     }
 
     @Test
     @OperateOnDeployment("wildfly2")
+    @TargetsContainer("widlfly-managed-2")
     public void testEjbCall() throws NamingException {
         EJBClient ejbClient = new EJBClient();
         Assert.assertEquals("Hello",ejbClient.callStatelessEJB(APPLICATION_NAME));
@@ -57,6 +57,7 @@ public class WildflyToWildflyIT {
 
     @Test
     @OperateOnDeployment("wildfly2")
+    @TargetsContainer("widlfly-managed-2")
     public void testEjbCallToOtherLocalServer() throws NamingException {
         EJBClient ejbClient = new EJBClient();
         Properties properties = new Properties();
@@ -72,6 +73,7 @@ public class WildflyToWildflyIT {
 
     @Test
     @OperateOnDeployment("wildfly2")
+    @TargetsContainer("widlfly-managed-2")
     public void testEjbCallToSameLocalServer() throws NamingException {
         EJBClient ejbClient = new EJBClient();
         Properties properties = new Properties();
@@ -88,6 +90,7 @@ public class WildflyToWildflyIT {
 
     @Test
     @OperateOnDeployment("wildfly2")
+    @TargetsContainer("widlfly-managed-2")
     public void testEjbCallToServer() throws NamingException {
         EJBClient ejbClient = new EJBClient();
         Properties properties = new Properties();
