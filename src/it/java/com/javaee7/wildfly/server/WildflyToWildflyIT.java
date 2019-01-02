@@ -13,6 +13,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -24,11 +25,12 @@ import java.util.Properties;
  * https://github.com/arquillian/arquillian-showcase/blob/master/multinode/pom.xml
  */
 @RunWith(Arquillian.class)
+@Ignore
 public class WildflyToWildflyIT {
 
     private static String APPLICATION_NAME = "myApplication";
 
-    @Deployment @TargetsContainer("widlfly-managed-1")
+    @Deployment(name = "wildfly1") @TargetsContainer("widlfly-managed-1")
     public static WebArchive createDeployment1() {
         return ShrinkWrap.create(WebArchive.class, String.format("%s.war", APPLICATION_NAME))
                 .addClasses(Counter.class,RemoteCounter.class)
@@ -36,7 +38,7 @@ public class WildflyToWildflyIT {
                 .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
     }
 
-    @Deployment @TargetsContainer("widlfly-managed-2")
+    @Deployment(name="wildfly2") @TargetsContainer("widlfly-managed-2")
     public static WebArchive createDeployment2() {
         return ShrinkWrap.create(WebArchive.class, String.format("%s.war", APPLICATION_NAME + "-2"))
                 .addClasses(EJBClient.class)

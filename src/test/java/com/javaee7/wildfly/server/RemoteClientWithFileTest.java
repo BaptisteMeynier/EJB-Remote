@@ -27,8 +27,7 @@ public class RemoteClientWithFileTest {
     private static String APPLICATION_NAME = "myApplication";
 
 
-    @Deployment(name = "wildfly1")
-    @TargetsContainer("widlfly-managed-1")
+    @Deployment
     public static WebArchive createDeployment() {
         return ShrinkWrap.create(WebArchive.class, String.format("%s.war", APPLICATION_NAME))
                 .addClasses(Counter.class, RemoteCounter.class)
